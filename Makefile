@@ -1,37 +1,32 @@
-FC = gfortran
+.SUFFIXES:
+.DELETE_ON_ERROR:
+.ONESHELL:
+.SECONDARY:
+.PRECIOUS:
+export SHELL := /bin/bash
+export SHELLOPTS := pipefail:errexit:nounset:noclobber
 
-FFLAGS = -O -Wall -fbounds-check -g -Wno-uninitialized 
+FC := gfortran
 
-DRIVER1_77 = driver1.f
-DRIVER2_77 = driver2.f
-DRIVER3_77 = driver3.f
+FFLAGS := -O -Wall -fbounds-check -g -Wno-uninitialized
 
-DRIVER1_90 = driver1.f90
-DRIVER2_90 = driver2.f90
-DRIVER3_90 = driver3.f90
+DRIVERS := driver1.f driver2.f driver3.f driver1.f90 driver2.f90 driver3.f90
+DRIVER_EXES := $(DRIVERS:%=%.exe)
 
-LBFGSB  = lbfgsb.f
-LINPACK = linpack.f
-BLAS    = blas.f
-TIMER   = timer.f
+LBFGSB := lbfgsb.o
+LINPACK := linpack.o
+BLAS := blas.o
+TIMER := timer.o
 
-all :  lbfgsb_77_1 lbfgsb_77_2 lbfgsb_77_3 lbfgsb_90_1 lbfgsb_90_2 lbfgsb_90_3 
+.PHONY: all
 
+all: $(DRIVER_EXES)
 
-lbfgsb_77_1 : $(DRIVER1_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
-	$(FC) $(FFLAGS) $(DRIVER1_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_77_1
+%.exe: % $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
+	$(FC) $(FFLAGS) $^ -o $@
 
-lbfgsb_77_2 : $(DRIVER2_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
-	$(FC) $(FFLAGS) $(DRIVER2_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_77_2
+%.o: %.f
+	$(FC) $(FFLAGS) -c $< -o $@
 
-lbfgsb_77_3 : $(DRIVER3_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
-	$(FC) $(FFLAGS) $(DRIVER3_77) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_77_3
-
-lbfgsb_90_1 : $(DRIVER1_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
-	$(FC) $(FFLAGS) $(DRIVER1_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_90_1
-
-lbfgsb_90_2 : $(DRIVER2_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
-	$(FC) $(FFLAGS) $(DRIVER2_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_90_2
-
-lbfgsb_90_3 : $(DRIVER3_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
-	$(FC) $(FFLAGS) $(DRIVER3_90) $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER) -o x.lbfgsb_90_3
+%.o: %.f90
+	$(FC) $(FFLAGS) -c $< -o $@
