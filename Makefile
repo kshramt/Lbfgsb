@@ -16,14 +16,21 @@ FFLAGS := -O -Wall -fbounds-check -g -Wno-uninitialized
 DRIVERS := driver1.f driver2.f driver3.f driver1.f90 driver2.f90 driver3.f90
 DRIVER_EXES := $(DRIVERS:%=%.exe)
 
+BLASS := dnrm2 daxpy dcopy ddot dscal
+BLAS_OS := $(BLASS:%=%.o)
 LBFGSB := lbfgsb.o
 LINPACK := linpack.o
-BLAS := blas.o
 TIMER := timer.o
 
 .PHONY: all
 
 all: $(DRIVER_EXES)
+
+define cp_blas_template =
+$(1).f: dep/$(LAPACK)/BLAS/SRC/$(1).f
+	cp -f $$< $$@
+endef
+$(foreach f,$(BLASS),$(eval $(call cp_blas_template,$(f))))
 
 $(HOME)/Downloads/$(LAPACK).tgz:
 	mkdir -p $(@D)
@@ -41,7 +48,7 @@ dep/%: $(HOME)/Downloads/%.tgz
 	cd $(@D)
 	tar -mxf $<
 
-%.exe: % $(LBFGSB) $(LINPACK) $(BLAS) $(TIMER)
+%.exe: % $(LBFGSB) $(BLAS_OS) $(LINPACK) $(TIMER)
 	$(FC) $(FFLAGS) $^ -o $@
 
 %.o: %.f
