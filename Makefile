@@ -1,3 +1,5 @@
+# Configurations
+
 .SUFFIXES:
 .DELETE_ON_ERROR:
 .ONESHELL:
@@ -5,6 +7,8 @@
 .PRECIOUS:
 export SHELL := /bin/bash
 export SHELLOPTS := pipefail:errexit:nounset:noclobber
+
+# Constants
 
 LAPACK_VERSION := 3.5.0
 LAPACK := lapack-$(LAPACK_VERSION)
@@ -22,6 +26,8 @@ LBFGSB := lbfgsb.o
 LINPACK := linpack.o
 TIMER := timer.o
 
+# Tasks
+
 .PHONY: all
 
 all: $(DRIVER_EXES)
@@ -31,6 +37,8 @@ $(1).f: dep/$(LAPACK)/BLAS/SRC/$(1).f
 	cp -f $$< $$@
 endef
 $(foreach f,$(BLASS),$(eval $(call cp_blas_template,$(f))))
+
+# Rules
 
 $(HOME)/Downloads/$(LAPACK).tgz:
 	mkdir -p $(@D)
