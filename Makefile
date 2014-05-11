@@ -20,10 +20,11 @@ FFLAGS := -O -Wall -fbounds-check -g -Wno-uninitialized -fbacktrace
 DRIVERS := driver1.f driver2.f driver3.f driver1.f90 driver2.f90 driver3.f90
 DRIVER_EXES := $(DRIVERS:%=%.exe)
 
-BLASS := dnrm2 daxpy dcopy ddot dscal
+LAPACKS := dpotrf dpotf2 ilaenv disnan ieeeck iparmq xerbla dlaisnan dtrtrs
+LAPACK_OS := $(LAPACKS:%=%.o)
+BLASS := dgemm dsyrk dtrsm lsame dgemv dnrm2 daxpy dcopy ddot dscal
 BLAS_OS := $(BLASS:%=%.o)
 LBFGSB := lbfgsb.o
-LINPACK := linpack.o
 TIMER := timer.o
 
 # Tasks
@@ -31,6 +32,14 @@ TIMER := timer.o
 .PHONY: all
 
 all: $(DRIVER_EXES)
+
+# Files
+
+define cp_lapack_template =
+$(1).f: dep/$(LAPACK)/SRC/$(1).f
+	cp -f $$< $$@
+endef
+$(foreach f,$(LAPACKS),$(eval $(call cp_lapack_template,$(f))))
 
 define cp_blas_template =
 $(1).f: dep/$(LAPACK)/BLAS/SRC/$(1).f
@@ -56,7 +65,7 @@ dep/%: $(HOME)/Downloads/%.tgz
 	cd $(@D)
 	tar -mxf $<
 
-%.exe: % $(LBFGSB) $(BLAS_OS) $(LINPACK) $(TIMER)
+%.exe: % $(LBFGSB) $(BLAS_OS) $(LAPACK_OS) $(TIMER)
 	$(FC) $(FFLAGS) $^ -o $@
 
 %.o: %.f
