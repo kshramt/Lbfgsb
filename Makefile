@@ -20,10 +20,12 @@ TIMER := timer.o
 
 ifeq ($(FC),ifort)
    LIBS := -mkl
+   FFLAGS := -warn -check -trace -O0 -p -g -DDEBUG -debug all
 else
    LIBS := -lblas -llapack
+   FFLAGS := -O -Wall -fbounds-check -g -Wno-uninitialized -fbacktrace
 endif
-FFLAGS := -O -Wall -fbounds-check -g -Wno-uninitialized -fbacktrace $(LIBS)
+FFLAGS += $(LIBS)
 
 # Tasks
 
